@@ -5,6 +5,7 @@
 		constructor (options) {
 			this.el = options.el;
 			this.title = this.el.querySelector('.js-title');
+			this.handlers = {};
 			this._initEvents();
 		}
 		
@@ -58,61 +59,60 @@
 		 * Action select item
 		 */
 		_actionSelectItem (event) {
-			if (event.target.classList.contains('dropdown__item'))
-				this.select(event.target);
-			this.toggle(); 
+			var target = event.target;
+			
+			if (target.classList.contains('dropdown__item')) {
+				this.select(target);
+			}
+			
+			this.toggle();
 		}
 		
 		/**
 		 * Dispatch event 'menu.open'
 		 */
 		_onOpen () {
-			this.el.dispatchEvent(new CustomEvent('menu.open', {
-				bubbles: false,
-				detail: {
-					menu: this
-				}
-			}));
+			if (this.handlers['menu.open'])
+				this.handlers['menu.open'].forEach((callback) => {
+					callback();
+				});
 		}
 		
 		/**
 		 * Dispatch event 'menu.close'
 		 */
 		_onClose () {
-			this.el.dispatchEvent(new CustomEvent('menu.close', {
-				bubbles: false,
-				detail: {
-					menu: this
-				}
-			}));
+			if (this.handlers['menu.close'])
+				this.handlers['menu.close'].forEach((callback) => {
+					callback();
+				});
 		}
 		
 		/**
 		 * Dispatch event 'menu.select'
 		 */
 		_onSelect (selectedItem) {
-			this.el.dispatchEvent(new CustomEvent('menu.select', {
-				bubbles: false,
-				detail: {
-					menu: this,
-					selectedItem
-				}
-			}));
+			if (this.handlers['menu.select'])
+				this.handlers['menu.select'].forEach((callback) => {
+					callback(selectedItem);
+				});
 		}
 		
 		/**
 		 * Register new event listener
 		 */
 		on (eventName, callback) {
-			this.el.addEventListener(eventName, callback);
+			if (!this.handlers[eventName])
+				this.handlers[eventName] = [];
+			this.handlers[eventName].push(callback);
 			return this;
 		}
 		
 		/**
 		 * Remove event listener
 		 */
-		off (eventName) {
-			this.el.removeEventListener(eventName);
+		off (eventName, callback) {
+			this.handlers[eventName].remove(callback);
 			return this;
 		}
 		

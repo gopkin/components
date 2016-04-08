@@ -2,13 +2,13 @@
 	//Use our component
 	window.menu = new Dropdown({
 		el: document.querySelector('.js-dropdown')
-	}).on('menu.open', (event) => {
+	}).on('menu.open', () => {
 		console.log('MENU OPEN!');
-	}).on('menu.close', (event) => {
+	}).on('menu.close', () => {
 		console.log('MENU CLOSE!');
-	}).on('menu.select', (event) => {
-		console.log('MENU SELECT!', event.detail.selectedItem);
-	}).on('menu.select', (event) => {
+	}).on('menu.select', (selectedItem) => {
+		console.log('MENU SELECT!', selectedItem);
+	}).on('menu.select', () => {
 		console.log('MENU SELECT2!');
 	});
 })();
