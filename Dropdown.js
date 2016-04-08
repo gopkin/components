@@ -4,8 +4,7 @@
 	class Dropdown {
 		constructor (options) {
 			this.el = options.el;
-
-			this._itemSelectCallbacks = [];
+			this.title = this.el.querySelector('.js-title');
 			this._initEvents();
 		}
 		
@@ -14,6 +13,7 @@
 		 */
 		open () {
 			this.el.classList.add('dropdown_open');
+			this._onOpen();
 		}
 
 		/**
@@ -21,8 +21,17 @@
 		 */
 		close () {
 			this.el.classList.remove('dropdown_open');
+			this._onClose();
 		}
-
+		
+		/**
+		 * Select item
+		 */
+		select (item) {
+			this.title.innerHTML = item.innerText;
+			this._onSelect(event.target);
+		}
+		
 		/**
 		 * Open or close?
 		 */
@@ -34,48 +43,79 @@
 			}
 		}
 
-		/**
-		 * Set callback on user select event
-		 * @param  {Function} callback
-		 */
-		onSelect (callback) {
-			this._itemSelectCallbacks.push(callback);
-		}
-
 		isOpen () {
 			return this.el.classList.contains('dropdown_open');
 		}
 
+		/**
+		 * Bind initial events
+		 */
 		_initEvents () {
-			this.el.addEventListener('click', this._onClick.bind(this));
+			this.el.addEventListener('click', this._actionSelectItem.bind(this));
 		}
 
-		_onClick (event) {
-			if (event.target.classList.contains('dropdown__item')) {
-				event.preventDefault();
-				this._onItemClick(event);
-			} else {
-				this.toggle();
-			}
+		/**
+		 * Action select item
+		 */
+		_actionSelectItem (event) {
+			if (event.target.classList.contains('dropdown__item'))
+				this.select(event.target);
+			this.toggle(); 
 		}
-
-		_onItemClick (event) {
-			var itemHtml = event.target.innerHTML;
-			this.el.querySelector('.js-title').innerHTML = itemHtml;
-
-			this._itemSelectCallbacks.forEach(callback => {
-				callback({
-					el: this.el,
-					item: this,
-					text: itemHtml
-				});
-			});
-
-			this.close();
+		
+		/**
+		 * Dispatch event 'menu.open'
+		 */
+		_onOpen () {
+			this.el.dispatchEvent(new CustomEvent('menu.open', {
+				bubbles: false,
+				detail: {
+					menu: this
+				}
+			}));
 		}
-
-
-
+		
+		/**
+		 * Dispatch event 'menu.close'
+		 */
+		_onClose () {
+			this.el.dispatchEvent(new CustomEvent('menu.close', {
+				bubbles: false,
+				detail: {
+					menu: this
+				}
+			}));
+		}
+		
+		/**
+		 * Dispatch event 'menu.select'
+		 */
+		_onSelect (selectedItem) {
+			this.el.dispatchEvent(new CustomEvent('menu.select', {
+				bubbles: false,
+				detail: {
+					menu: this,
+					selectedItem
+				}
+			}));
+		}
+		
+		/**
+		 * Register new event listener
+		 */
+		on (eventName, callback) {
+			this.el.addEventListener(eventName, callback);
+			return this;
+		}
+		
+		/**
+		 * Remove event listener
+		 */
+		off (eventName) {
+			this.el.removeEventListener(eventName);
+			return this;
+		}
+		
 		//TODO: method addItem
 	}
 
